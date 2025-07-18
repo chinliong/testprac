@@ -1,10 +1,5 @@
 const request = require("supertest");
-const { app, server, validatePassword } = require("./app");
-
-// Close server after all tests complete
-afterAll((done) => {
-  server.close(done);
-});
+const { app, validatePassword } = require("./app");
 
 describe("Password Validation", () => {
   test("should reject password shorter than 8 characters", () => {
@@ -71,10 +66,6 @@ describe("Password Validation", () => {
 });
 
 describe("Web Application", () => {
-  afterAll(() => {
-    server.close();
-  });
-
   test("should return home page on GET /", async () => {
     const response = await request(app).get("/");
     expect(response.status).toBe(200);

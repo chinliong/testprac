@@ -1,101 +1,112 @@
-const express = require('express');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const fs = require('fs');
-const path = require('path');
+const express = require("express");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"]
-    }
-  }
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+      },
+    },
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  message: "Too many requests from this IP, please try again later.",
 });
 app.use(limiter);
 
 // Middleware
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // Load common passwords
 let commonPasswords = new Set();
 try {
-  const passwordList = fs.readFileSync(path.join(__dirname, '10-million-password-list-top-1000.txt'), 'utf8');
-  commonPasswords = new Set(passwordList.split('\n').map(pwd => pwd.trim()).filter(pwd => pwd.length > 0));
+  const passwordList = fs.readFileSync(
+    path.join(__dirname, "10-million-password-list-top-1000.txt"),
+    "utf8"
+  );
+  commonPasswords = new Set(
+    passwordList
+      .split("\n")
+      .map((pwd) => pwd.trim())
+      .filter((pwd) => pwd.length > 0)
+  );
 } catch (error) {
-  console.warn('Warning: Could not load common passwords list');
+  console.warn("Warning: Could not load common passwords list");
 }
 
 // Password validation function based on OWASP recommendations
 function validatePassword(password) {
   const errors = [];
-  
+
   // Check minimum length (8 characters)
   if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
+    errors.push("Password must be at least 8 characters long");
   }
-  
+
   // Check maximum length (64 characters to prevent DoS)
   if (password.length > 64) {
-    errors.push('Password must not exceed 64 characters');
+    errors.push("Password must not exceed 64 characters");
   }
-  
+
   // Check for at least one lowercase letter
   if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
+    errors.push("Password must contain at least one lowercase letter");
   }
-  
+
   // Check for at least one uppercase letter
   if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
+    errors.push("Password must contain at least one uppercase letter");
   }
-  
+
   // Check for at least one digit
   if (!/\d/.test(password)) {
-    errors.push('Password must contain at least one digit');
+    errors.push("Password must contain at least one digit");
   }
-  
+
   // Check for at least one special character
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    errors.push('Password must contain at least one special character');
+    errors.push("Password must contain at least one special character");
   }
-  
+
   // Check against common passwords
   if (commonPasswords.has(password.toLowerCase())) {
-    errors.push('Password is too common and not allowed');
+    errors.push("Password is too common and not allowed");
   }
-  
+
   // Check for common patterns
   if (/^(.)\1+$/.test(password)) {
-    errors.push('Password cannot be all the same character');
+    errors.push("Password cannot be all the same character");
   }
-  
+
   // Check for sequential characters
   if (/123456|abcdef|qwerty/i.test(password)) {
-    errors.push('Password cannot contain common sequential patterns');
+    errors.push("Password cannot contain common sequential patterns");
   }
-  
+
   return {
     isValid: errors.length === 0,
-    errors: errors
+    errors: errors,
   };
 }
 
 // Routes
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -137,9 +148,9 @@ app.get('/', (req, res) => {
   `);
 });
 
-app.post('/login', (req, res) => {
+app.post("/login", (req, res) => {
   const { password } = req.body;
-  
+
   if (!password) {
     return res.status(400).send(`
       <!DOCTYPE html>
@@ -161,9 +172,9 @@ app.post('/login', (req, res) => {
       </html>
     `);
   }
-  
+
   const validation = validatePassword(password);
-  
+
   if (!validation.isValid) {
     return res.status(400).send(`
       <!DOCTYPE html>
@@ -182,14 +193,16 @@ app.post('/login', (req, res) => {
       <body>
           <h3>Password validation failed:</h3>
           <ul>
-              ${validation.errors.map(error => `<li class="error">${error}</li>`).join('')}
+              ${validation.errors
+                .map((error) => `<li class="error">${error}</li>`)
+                .join("")}
           </ul>
           <a href="/">Back to login</a>
       </body>
       </html>
     `);
   }
-  
+
   // If password is valid, show welcome page
   res.send(`
     <!DOCTYPE html>
@@ -223,8 +236,8 @@ app.post('/login', (req, res) => {
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
 // Start server
