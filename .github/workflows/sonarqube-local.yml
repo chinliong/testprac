@@ -1,13 +1,16 @@
-name: SonarQube Analysis
+name: SonarQube Local Analysis
 
 on:
   workflow_dispatch: # Manually trigger this workflow
   push:
     branches: [main, develop]
 
+env:
+  SONAR_HOST_URL: http://localhost:9000
+
 jobs:
-  sonarqube:
-    runs-on: ubuntu-latest
+  sonarqube-local:
+    runs-on: self-hosted # This requires a self-hosted runner on your machine
 
     steps:
       - name: Checkout code
@@ -27,6 +30,10 @@ jobs:
       - name: Run tests with coverage
         run: npm test -- --coverage
 
+      - name: Wait for SonarQube to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:9000/api/system/status; do sleep 5; done'
+
       - name: Setup SonarQube Scanner
         uses: warchant/setup-sonar-scanner@v8
         with:
@@ -35,8 +42,8 @@ jobs:
       - name: Run SonarQube Analysis
         run: |
           sonar-scanner \
-            -Dproject.settings=sonar-project.properties \
-            -Dsonar.token=${{ secrets.SONARQUBE_TOKEN }}
+            -Dproject.settings=sonar-project.local.properties \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
         env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: http://localhost:9000
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
