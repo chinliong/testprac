@@ -1,5 +1,14 @@
 const request = require("supertest");
-const { app, validatePassword } = require("./app");
+const { app, server, validatePassword } = require("./app");
+
+// Close server after all tests complete
+afterAll((done) => {
+  if (server && server.listening) {
+    server.close(done);
+  } else {
+    done();
+  }
+});
 
 describe("Password Validation", () => {
   test("should reject password shorter than 8 characters", () => {
