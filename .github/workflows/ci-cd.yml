@@ -27,7 +27,7 @@ jobs:
         run: npm test -- --coverage
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage/lcov.info
 
@@ -59,7 +59,7 @@ jobs:
           format: "HTML"
 
       - name: Upload dependency check results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
           path: reports/
@@ -88,7 +88,7 @@ jobs:
 
       # Option 1: Use SonarCloud (recommended for GitHub)
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -156,7 +156,7 @@ jobs:
 
           # Test valid password
           response=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            -d "password=SecurePass123!" \
+            -d "password=SecurePass89!" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             http://localhost:3000/login)
           if [ "$response" != "200" ]; then

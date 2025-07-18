@@ -105,15 +105,13 @@ docker-compose up -d
 # Run tests to generate coverage
 npm test -- --coverage
 
-# Run SonarQube analysis
-sonar-scanner \\
-  -Dsonar.projectKey=testprac \\
-  -Dsonar.projectName="Test Practical - Secure Password Application" \\
-  -Dsonar.projectVersion=1.0 \\
-  -Dsonar.sources=. \\
-  -Dsonar.host.url=http://localhost:9000 \\
-  -Dsonar.login=admin \\
-  -Dsonar.password=admin
+# Option 1: Use the provided script (recommended)
+./run-sonar-analysis.sh
+
+# Option 2: Run SonarQube analysis manually
+sonar-scanner \
+  -Dproject.settings=sonar-project.local.properties \
+  -Dsonar.token=YOUR_SONAR_TOKEN
 ```
 
 ## Viewing Results
@@ -176,8 +174,24 @@ Your project is configured with:
 
 - ✅ SonarQube latest version (25.7.0+) running locally
 - ✅ GitHub Actions workflow ready for SonarCloud
-- ✅ Test coverage integration with Jest
+- ✅ Test coverage integration with Jest (94.64% coverage)
 - ✅ Proper exclusions for node_modules and test files
 - ✅ Security scan integration in CI/CD pipeline
+- ✅ Updated GitHub Actions with latest action versions
+- ✅ Separate configuration for local vs cloud analysis
+
+### Quick Start
+
+For **SonarCloud** (GitHub integration):
+
+1. Sign up at https://sonarcloud.io
+2. Import your repository
+3. Add `SONAR_TOKEN` to GitHub secrets
+4. Push to trigger analysis
+
+For **Local Development**:
+
+1. Run `./run-sonar-analysis.sh`
+2. View results at http://localhost:9000
 
 Choose either SonarCloud (recommended) or local SonarQube with self-hosted runner for continuous integration.

@@ -42,16 +42,8 @@ jobs:
       - name: Run SonarQube Analysis
         run: |
           sonar-scanner \
-            -Dsonar.projectKey=testprac \
-            -Dsonar.projectName="Test Practical - Secure Password Application" \
-            -Dsonar.projectVersion=1.0 \
-            -Dsonar.sources=. \
-            -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js,**/*.spec.js,.github/** \
-            -Dsonar.tests=. \
-            -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=admin \
-            -Dsonar.password=admin
+            -Dproject.settings=sonar-project.local.properties \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
         env:
           SONAR_HOST_URL: http://localhost:9000
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
