@@ -11,26 +11,31 @@ SonarCloud is the cloud-based version of SonarQube and is **free for public repo
 #### Setup Steps:
 
 1. **Sign up for SonarCloud**
+
    - Go to [https://sonarcloud.io/](https://sonarcloud.io/)
    - Sign in with your GitHub account
    - Import your repository
 
 2. **Configure SonarCloud Project**
+
    - Organization key: `chinliong` (your GitHub username)
    - Project key: `chinliong_testprac`
    - Enable automatic analysis or use CI-based analysis
 
 3. **Get SonarCloud Token**
+
    - Go to SonarCloud → My Account → Security
    - Generate a new token
    - Copy the token value
 
 4. **Add GitHub Secrets**
+
    - Go to your GitHub repository → Settings → Secrets and variables → Actions
    - Add these secrets:
      - `SONAR_TOKEN`: Your SonarCloud token
 
 5. **Update sonar-project.properties**
+
    ```properties
    sonar.projectKey=chinliong_testprac
    sonar.organization=chinliong
@@ -49,24 +54,28 @@ For using your local SonarQube instance with GitHub Actions (requires self-hoste
 #### Setup Steps:
 
 1. **Make SonarQube Accessible**
+
    - Your SonarQube is running on `http://localhost:9000`
    - For GitHub Actions to access it, you need either:
      - A self-hosted GitHub runner on your machine
      - Or expose SonarQube to the internet (not recommended for development)
 
 2. **Setup Self-Hosted Runner**
+
    ```bash
    # Download and configure GitHub Actions runner
    # Follow instructions from: GitHub Repository → Settings → Actions → Runners → New self-hosted runner
    ```
 
 3. **Get SonarQube Token**
+
    - Access your local SonarQube: http://localhost:9000
    - Login with admin/admin (default credentials)
    - Go to My Account → Security → Generate Token
    - Copy the token
 
 4. **Add GitHub Secrets**
+
    - `SONAR_TOKEN`: Your SonarQube token
    - `SONAR_HOST_URL`: `http://localhost:9000`
 
@@ -110,9 +119,11 @@ sonar-scanner \\
 ## Viewing Results
 
 ### SonarCloud
+
 - Results available at: https://sonarcloud.io/project/overview?id=chinliong_testprac
 
 ### Local SonarQube
+
 - Results available at: http://localhost:9000
 - Login with admin/admin
 - Navigate to your project
@@ -132,14 +143,17 @@ SonarQube can block your CI/CD pipeline if code quality doesn't meet standards:
 ### Common Issues
 
 1. **"Project not found"**
+
    - Verify project key matches in sonar-project.properties
    - Check if project exists in SonarQube/SonarCloud
 
 2. **"Unauthorized"**
+
    - Verify SONAR_TOKEN is correctly set in GitHub secrets
    - Check token has project analysis permissions
 
 3. **"Connection refused"**
+
    - For local SonarQube: ensure it's running and accessible
    - For self-hosted runners: verify network connectivity
 
@@ -159,6 +173,7 @@ SonarQube can block your CI/CD pipeline if code quality doesn't meet standards:
 ## Current Configuration
 
 Your project is configured with:
+
 - ✅ SonarQube latest version (25.7.0+) running locally
 - ✅ GitHub Actions workflow ready for SonarCloud
 - ✅ Test coverage integration with Jest

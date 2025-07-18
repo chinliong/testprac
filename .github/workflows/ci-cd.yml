@@ -2,103 +2,103 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run tests
-      run: npm test -- --coverage
-      
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage/lcov.info
-        
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+
   security-scan:
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run npm audit
-      run: npm audit --audit-level moderate
-      
-    - name: Run dependency check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        project: 'secure-password-app'
-        path: '.'
-        format: 'HTML'
-        
-    - name: Upload dependency check results
-      uses: actions/upload-artifact@v3
-      with:
-        name: dependency-check-report
-        path: reports/
-        
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level moderate
+
+      - name: Run dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "secure-password-app"
+          path: "."
+          format: "HTML"
+
+      - name: Upload dependency check results
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: reports/
+
   sonarqube-analysis:
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Required for SonarQube analysis
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run tests with coverage
-      run: npm test -- --coverage
-      
-    # Option 1: Use SonarCloud (recommended for GitHub)
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for SonarQube analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage
+
+      # Option 1: Use SonarCloud (recommended for GitHub)
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
     # Option 2: Use local SonarQube instance (commented out - uncomment if using local SonarQube)
     # - name: Setup SonarQube Scanner
     #   uses: warchant/setup-sonar-scanner@v8
     #   with:
     #     version: 5.0.1.3006
-    #     
+    #
     # - name: Run SonarQube Scan
     #   run: |
     #     sonar-scanner \
@@ -112,86 +112,86 @@ jobs:
     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        
+
   ui-test:
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Start application
-      run: |
-        npm start &
-        sleep 10
-        
-    - name: Wait for application to be ready
-      run: |
-        timeout 60 bash -c 'until curl -f http://localhost:3000/health; do sleep 2; done'
-        
-    - name: Run UI tests with curl
-      run: |
-        # Test home page
-        curl -f http://localhost:3000/ | grep "Secure Password Login"
-        
-        # Test invalid password
-        response=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-          -d "password=weak" \
-          -H "Content-Type: application/x-www-form-urlencoded" \
-          http://localhost:3000/login)
-        if [ "$response" != "400" ]; then
-          echo "Expected 400 but got $response"
-          exit 1
-        fi
-        
-        # Test valid password
-        response=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-          -d "password=SecurePass123!" \
-          -H "Content-Type: application/x-www-form-urlencoded" \
-          http://localhost:3000/login)
-        if [ "$response" != "200" ]; then
-          echo "Expected 200 but got $response"
-          exit 1
-        fi
-        
-        # Test health endpoint
-        curl -f http://localhost:3000/health | grep "OK"
-        
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: |
+          npm start &
+          sleep 10
+
+      - name: Wait for application to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:3000/health; do sleep 2; done'
+
+      - name: Run UI tests with curl
+        run: |
+          # Test home page
+          curl -f http://localhost:3000/ | grep "Secure Password Login"
+
+          # Test invalid password
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -d "password=weak" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            http://localhost:3000/login)
+          if [ "$response" != "400" ]; then
+            echo "Expected 400 but got $response"
+            exit 1
+          fi
+
+          # Test valid password
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -d "password=SecurePass123!" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            http://localhost:3000/login)
+          if [ "$response" != "200" ]; then
+            echo "Expected 200 but got $response"
+            exit 1
+          fi
+
+          # Test health endpoint
+          curl -f http://localhost:3000/health | grep "OK"
+
   build-and-deploy:
     runs-on: ubuntu-latest
     needs: [test, security-scan, sonarqube-analysis, ui-test]
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: |
-          ${{ secrets.DOCKER_USERNAME }}/secure-password-app:latest
-          ${{ secrets.DOCKER_USERNAME }}/secure-password-app:${{ github.sha }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/secure-password-app:latest
+            ${{ secrets.DOCKER_USERNAME }}/secure-password-app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
