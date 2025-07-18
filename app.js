@@ -214,7 +214,7 @@ app.post("/login", (req, res) => {
         <style>
             body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
             .welcome-container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; text-align: center; }
-            .password-display { background-color: #f8f9fa; padding: 10px; border-radius: 3px; margin: 20px 0; word-break: break-all; }
+            .success-message { background-color: #d4edda; color: #155724; padding: 15px; border-radius: 3px; margin: 20px 0; }
             button { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; }
             button:hover { background-color: #218838; }
         </style>
@@ -222,10 +222,10 @@ app.post("/login", (req, res) => {
     <body>
         <div class="welcome-container">
             <h2>Welcome!</h2>
-            <p>Your password has been successfully validated.</p>
-            <div class="password-display">
-                Password: ${password}
+            <div class="success-message">
+                Your password has been successfully validated and meets all security requirements.
             </div>
+            <p>You have been securely authenticated.</p>
             <form method="GET" action="/">
                 <button type="submit">Logout</button>
             </form>
