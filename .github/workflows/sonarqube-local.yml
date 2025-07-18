@@ -1,13 +1,16 @@
-name: SonarQube Analysis
+name: SonarQube Local Analysis
 
 on:
   workflow_dispatch: # Manually trigger this workflow
   push:
     branches: [main, develop]
 
+env:
+  SONAR_HOST_URL: http://localhost:9000
+
 jobs:
-  sonarqube:
-    runs-on: ubuntu-latest
+  sonarqube-local:
+    runs-on: self-hosted # This requires a self-hosted runner on your machine
 
     steps:
       - name: Debug Environment
