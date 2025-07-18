@@ -1,0 +1,57 @@
+name: SonarQube Local Analysis
+
+on:
+  workflow_dispatch:  # Manually trigger this workflow
+  push:
+    branches: [ main, develop ]
+    
+env:
+  SONAR_HOST_URL: http://localhost:9000
+
+jobs:
+  sonarqube-local:
+    runs-on: self-hosted  # This requires a self-hosted runner on your machine
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests with coverage
+      run: npm test -- --coverage
+      
+    - name: Wait for SonarQube to be ready
+      run: |
+        timeout 60 bash -c 'until curl -f http://localhost:9000/api/system/status; do sleep 5; done'
+        
+    - name: Setup SonarQube Scanner
+      uses: warchant/setup-sonar-scanner@v8
+      with:
+        version: 5.0.1.3006
+        
+    - name: Run SonarQube Analysis
+      run: |
+        sonar-scanner \
+          -Dsonar.projectKey=testprac \
+          -Dsonar.projectName="Test Practical - Secure Password Application" \
+          -Dsonar.projectVersion=1.0 \
+          -Dsonar.sources=. \
+          -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js,**/*.spec.js,.github/** \
+          -Dsonar.tests=. \
+          -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js \
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+          -Dsonar.host.url=http://localhost:9000 \
+          -Dsonar.login=admin \
+          -Dsonar.password=admin
+      env:
+        SONAR_HOST_URL: http://localhost:9000
