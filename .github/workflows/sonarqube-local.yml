@@ -43,7 +43,7 @@ jobs:
         run: |
           sonar-scanner \
             -Dproject.settings=sonar-project.local.properties \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.token=${{ secrets.SONAR_TOKEN_LOCAL }}
         env:
           SONAR_HOST_URL: http://localhost:9000
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_LOCAL }}

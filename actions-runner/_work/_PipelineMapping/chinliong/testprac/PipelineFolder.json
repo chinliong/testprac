@@ -1,0 +1,12 @@
+﻿{
+  "repositoryName": "chinliong/testprac",
+  "pipelineDirectory": "testprac",
+  "workspaceDirectory": "testprac/testprac",
+  "repositories": {
+    "chinliong/testprac": {
+      "repositoryPath": "testprac/testprac",
+      "lastRunOn": "07/19/2025 05:49:56 +08:00"
+    }
+  },
+  "lastRunOn": "07/19/2025 05:53:34 +08:00"
+}
