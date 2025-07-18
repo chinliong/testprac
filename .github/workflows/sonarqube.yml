@@ -1,0 +1,42 @@
+name: SonarQube Analysis
+
+on:
+  workflow_dispatch: # Manually trigger this workflow
+  push:
+    branches: [main, develop]
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage
+
+      - name: Setup SonarQube Scanner
+        uses: warchant/setup-sonar-scanner@v8
+        with:
+          version: 5.0.1.3006
+
+      - name: Run SonarQube Analysis
+        run: |
+          sonar-scanner \
+            -Dproject.settings=sonar-project.properties \
+            -Dsonar.token=${{ secrets.SONARQUBE_TOKEN }}
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
