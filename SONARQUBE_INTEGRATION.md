@@ -2,7 +2,7 @@
 
 This guide explains how to integrate SonarQube with GitHub Actions for automated code quality analysis.
 
-## Three Integration Options
+## Two Integration Options
 
 ### Option 1: SonarCloud (Recommended for GitHub Projects)
 
@@ -45,41 +45,24 @@ SonarCloud is the cloud-based version of SonarQube and is **free for public repo
    - Uses `SonarSource/sonarcloud-github-action@v2.3.0`
    - Results will appear in SonarCloud dashboard
 
-### Option 2: Manual Local Analysis
+### Option 2: Local SonarQube Instance
 
-For running SonarQube analysis manually on your local machine without GitHub Actions.
-
-### Option 3: Self-Hosted Runner 🏠
-
-Use a self-hosted GitHub Actions runner on your machine for automated analysis with your local SonarQube instance.
-
-**Key Benefits:**
-- The runner runs on your machine
-- Can access localhost:9000 directly
-- Automated CI/CD with your local SonarQube instance
+For using your local SonarQube instance with GitHub Actions (requires self-hosted runner).
 
 #### Setup Steps:
 
-1. **Setup Self-Hosted GitHub Runner**
+1. **Make SonarQube Accessible**
 
-   - Go to your GitHub repository → Settings → Actions → Runners
-   - Click "New self-hosted runner"
-   - Follow the instructions to download and configure the runner on your machine:
+   - Your SonarQube is running on `http://localhost:9000`
+   - For GitHub Actions to access it, you need either:
+     - A self-hosted GitHub runner on your machine
+     - Or expose SonarQube to the internet (not recommended for development)
 
-   ```bash
-   # Example commands (follow the exact instructions from GitHub)
-   mkdir actions-runner && cd actions-runner
-   curl -o actions-runner-osx-x64-2.311.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.311.0/actions-runner-osx-x64-2.311.0.tar.gz
-   tar xzf ./actions-runner-osx-x64-2.311.0.tar.gz
-   ./config.sh --url https://github.com/chinliong/testprac --token YOUR_REGISTRATION_TOKEN
-   ./run.sh
-   ```
-
-2. **Start Your Local SonarQube**
+2. **Setup Self-Hosted Runner**
 
    ```bash
-   # Make sure SonarQube is running on localhost:9000
-   docker-compose up -d
+   # Download and configure GitHub Actions runner
+   # Follow instructions from: GitHub Repository → Settings → Actions → Runners → New self-hosted runner
    ```
 
 3. **Get SonarQube Token**
@@ -91,23 +74,14 @@ Use a self-hosted GitHub Actions runner on your machine for automated analysis w
 
 4. **Add GitHub Secrets**
 
-   - Go to your GitHub repository → Settings → Secrets and variables → Actions
-   - Add these secrets:
-     - `SONAR_TOKEN_LOCAL`: Your local SonarQube token (different from SonarCloud token)
+   - `SONAR_TOKEN`: Your SonarQube token
+   - `SONAR_HOST_URL`: `http://localhost:9000`
 
-5. **Use the Self-Hosted Workflow**
+5. **Use Local Workflow**
+   - Use the workflow in `.github/workflows/sonarqube-local.yml`
+   - This requires a self-hosted runner
 
-   - The workflow in `.github/workflows/sonarqube-local.yml` needs to be updated to use `SONAR_TOKEN_LOCAL`
-   - It uses `runs-on: self-hosted` to run on your machine
-   - Manually trigger it via Actions tab or push to main/develop branch
-
-6. **Workflow Features**
-   - ✅ Runs on your machine with access to localhost:9000
-   - ✅ Automated test execution with coverage
-   - ✅ SonarQube scanner integration
-   - ✅ Real-time analysis results in your local SonarQube instance
-
-### Option 2: Manual Local Analysis
+## Manual Local Analysis (Alternative)
 
 If you don't want to use GitHub Actions, you can run SonarQube analysis manually:
 
@@ -218,23 +192,16 @@ Your project is configured with:
 
 ### Quick Start
 
-For **SonarCloud** (Option 1 - GitHub integration):
+For **SonarCloud** (GitHub integration):
 
 1. Sign up at https://sonarcloud.io
 2. Import your repository
 3. Add `SONAR_TOKEN` to GitHub secrets
 4. Push to trigger analysis
 
-For **Manual Local Development** (Option 2):
+For **Local Development**:
 
 1. Run `./run-sonar-analysis.sh`
 2. View results at http://localhost:9000
 
-For **Self-Hosted Runner** (Option 3 - Automated local analysis):
-
-1. Setup self-hosted GitHub runner on your machine
-2. Add `SONAR_TOKEN_LOCAL` to GitHub secrets (from local SonarQube)
-3. Trigger `.github/workflows/sonarqube-local.yml` workflow
-4. View results at http://localhost:9000
-
-Choose SonarCloud (Option 1 - recommended), manual local analysis (Option 2), or self-hosted runner (Option 3) for continuous integration.
+Choose either SonarCloud (recommended) or local SonarQube with self-hosted runner for continuous integration.
