@@ -96,7 +96,10 @@ describe("Web Application", () => {
       .send({ password: "SecurePass89!" });
     expect(response.status).toBe(200);
     expect(response.text).toContain("Welcome!");
-    expect(response.text).toContain("SecurePass89!");
+    expect(response.text).toContain("Your password has been successfully validated and meets all security requirements");
+    expect(response.text).toContain("You have been securely authenticated");
+    // Security: Password should NOT be displayed in response (XSS prevention)
+    expect(response.text).not.toContain("SecurePass89!");
   });
 
   test("should reject empty password", async () => {
