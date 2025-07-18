@@ -11,26 +11,31 @@ SonarCloud is the cloud-based version of SonarQube and is **free for public repo
 #### Setup Steps:
 
 1. **Sign up for SonarCloud**
+
    - Go to [https://sonarcloud.io/](https://sonarcloud.io/)
    - Sign in with your GitHub account
    - Import your repository `chinliong/testprac`
 
 2. **Configure SonarCloud Project**
+
    - Organization key: `chinliong` (your GitHub username)
    - Project key: `chinliong_testprac`
    - Enable automatic analysis or use CI-based analysis (choose CI-based)
 
 3. **Get SonarCloud Token**
+
    - Go to SonarCloud → My Account → Security
    - Generate a new token named "GitHub Actions"
    - Copy the token value (starts with `squ_`)
 
 4. **Add GitHub Secrets**
+
    - Go to your GitHub repository → Settings → Secrets and variables → Actions
    - Add these secrets:
      - `SONAR_TOKEN`: Your SonarCloud token (the one that starts with `squ_`)
 
 5. **Verify Configuration**
+
    - The `sonar-project.properties` file is already configured correctly
    - The GitHub Actions workflow in `.github/workflows/ci-cd.yml` is ready
    - Push to main/develop branch to trigger analysis
@@ -134,24 +139,29 @@ SonarQube can block your CI/CD pipeline if code quality doesn't meet standards:
 ### Common Issues
 
 1. **"Project not found"**
+
    - Verify project key matches in sonar-project.properties
    - Check if project exists in SonarQube/SonarCloud
 
 2. **"Unauthorized" / "Failed to query JRE metadata"**
+
    - Verify SONAR_TOKEN is correctly set in GitHub secrets
    - Check token has project analysis permissions
    - Make sure token starts with `squ_` for SonarCloud
 
 3. **"Connection refused"**
+
    - For local SonarQube: ensure it's running and accessible
    - For self-hosted runners: verify network connectivity
 
 4. **Coverage not showing**
+
    - Ensure tests run before SonarQube analysis
    - Verify lcov.info file is generated in coverage/
    - Check sonar.javascript.lcov.reportPaths setting
 
 5. **GitHub Actions: "This action is deprecated"**
+
    - Updated to use `SonarSource/sonarcloud-github-action@v2.3.0`
    - Avoid using `@master` versions in production
 
