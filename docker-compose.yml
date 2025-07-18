@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   web:
     build: .
@@ -7,35 +5,44 @@ services:
       - "80:3000"
     environment:
       - NODE_ENV=production
-    depends_on:
-      - sonarqube
+    networks:
+      - app-network
+
+  sonarqube-db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonar
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
     networks:
       - app-network
 
   sonarqube:
-    image: sonarqube:community
+    image: sonarqube:latest
     ports:
       - "9000:9000"
     environment:
       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube-db:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_logs:/opt/sonarqube/logs
       - sonarqube_extensions:/opt/sonarqube/extensions
     networks:
       - app-network
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
+    depends_on:
+      - web
+      - sonarqube-db
 
 volumes:
   sonarqube_data:
   sonarqube_logs:
   sonarqube_extensions:
+  postgresql_data:
 
 networks:
   app-network:
